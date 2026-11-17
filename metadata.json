@@ -1,0 +1,8 @@
+{
+  "name": "Rumah Gurita: Dimensi Gaib",
+  "description": "Game horor survival 3D WebGL berbasis legenda urban Bandung oleh Worth-IT Studios (Kangpcode). Bongkar mitos dengan fakta di tiga lantai Dimensi Gaib.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
