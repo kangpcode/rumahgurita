@@ -89,14 +89,14 @@ function buildAutoSkinnedHumanoid(
           elbowRelY: 0,
           legX: 0.10,
           kneeRelY: -H * 0.247,  // -0.43m -> 0.42m
-          armYMin0: H * 0.661,   // 1.15m
-          armYMin1: H * 0.705,   // 1.23m
-          armYMax0: H * 0.785,   // 1.37m
-          armYMax1: H * 0.828,   // 1.44m
-          armX0: 0.205,          // Presisi di luar lebar ransel (absX <= 0.197) dan dada inti
-          armX1: 0.245,
-          foreX0: 0.44,
-          foreX1: 0.52,
+          armYMin0: H * 0.47,    // 0.82m (seluruh area lengan di atas pinggang)
+          armYMin1: H * 0.52,    // 0.90m
+          armYMax0: H * 0.88,    // 1.53m
+          armYMax1: H * 0.94,    // 1.64m
+          armX0: 0.18,           // Batas jahitan bahu bebas robek: absX <= 0.18 adalah torso/ransel
+          armX1: 0.23,           // absX >= 0.23 adalah 100% lengan utuh
+          foreX0: 0.42,
+          foreX1: 0.50,
           headY0: H * 0.810,     // 1.41m
           headY1: H * 0.845,     // 1.47m
           headX0: 0.14,
@@ -105,8 +105,8 @@ function buildAutoSkinnedHumanoid(
           legY1: H * 0.460,      // 0.80m
           shinY0: H * 0.207,     // 0.36m
           shinY1: H * 0.264,     // 0.46m
-          lArmRestZ: 1.22,
-          rArmRestZ: -1.22,
+          lArmRestZ: 1.38,
+          rArmRestZ: -1.38,
         }
       : preset === 'buna'
         ? {
@@ -120,14 +120,14 @@ function buildAutoSkinnedHumanoid(
             elbowRelY: 0,
             legX: 0.07,
             kneeRelY: -H * 0.232,  // -0.26m -> 0.24m
-            armYMin0: H * 0.616,   // 0.69m
-            armYMin1: H * 0.652,   // 0.73m
-            armYMax0: H * 0.750,   // 0.84m
-            armYMax1: H * 0.786,   // 0.88m
-            armX0: 0.165,
-            armX1: 0.205,
-            foreX0: 0.28,
-            foreX1: 0.34,
+            armYMin0: H * 0.40,    // 0.45m
+            armYMin1: H * 0.46,    // 0.52m
+            armYMax0: H * 0.92,    // 1.03m
+            armYMax1: H * 0.98,    // 1.10m
+            armX0: 0.12,
+            armX1: 0.17,
+            foreX0: 0.26,
+            foreX1: 0.32,
             headY0: H * 0.741,     // 0.83m
             headY1: H * 0.786,     // 0.88m
             headX0: 0.18,
@@ -136,8 +136,8 @@ function buildAutoSkinnedHumanoid(
             legY1: H * 0.286,      // 0.32m
             shinY0: H * 0.125,     // 0.14m
             shinY1: H * 0.179,     // 0.20m
-            lArmRestZ: 1.12,
-            rArmRestZ: -1.12,
+            lArmRestZ: 1.35,
+            rArmRestZ: -1.35,
           }
         : {
             isTPose: false,
