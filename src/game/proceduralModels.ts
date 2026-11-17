@@ -243,9 +243,9 @@ function buildAutoSkinnedHumanoid(
     const z = pos.getZ(i);
     const absX = Math.abs(x);
 
-    // Proteksi tegas: Ransel (z < -0.04) dan inti dada (absX < 0.205) tidak boleh ikut tertarik tulang lengan
-    const isBackpack = preset === 'raka' && z < -0.04 && y > 0.85 && y < 1.48;
-    const isChestCore = preset === 'raka' && absX < 0.205 && y > 0.82 && y < 1.45;
+    // Proteksi tegas ransel (z < -0.05) & dada inti (absX < cfg.armX0)
+    const isBackpack = preset === 'raka' && z < -0.05 && absX < cfg.armX0 && y > 0.85 && y < 1.48;
+    const isChestCore = absX < cfg.armX0 && y > 0.82 && y < 1.55;
 
     const armYMask =
       smoothstepSkin(cfg.armYMin0, cfg.armYMin1, y) * (1 - smoothstepSkin(cfg.armYMax0, cfg.armYMax1, y));
@@ -380,7 +380,7 @@ export function syncHumanoidGlbBones(
 ): void {
   const b = rig.glbBones;
   if (!b) return;
-  const baseRestZ = (b.hips.userData.lArmRestZ as number | undefined) ?? 1.22;
+  const baseRestZ = (b.hips.userData.lArmRestZ as number | undefined) ?? 1.38;
   b.hips.position.y = b.baseHipY;
 
   if (opts.isSeated) {
@@ -406,13 +406,13 @@ export function syncHumanoidGlbBones(
 
     if (b.hips.userData.isTPose !== false) {
       // Pembatasan ayunan lengan anatomis: mencegah tangan melayang ke langit saat menengadah
-      const clampedPitchL = THREE.MathUtils.clamp(rig.leftArm.rotation.x, -0.65, 0.45);
-      const clampedPitchR = THREE.MathUtils.clamp(rig.rightArm.rotation.x, -0.65, 0.45);
-      b.lArm.rotation.set(clampedPitchL, 0, baseRestZ - rig.leftArm.rotation.z * 0.35);
-      b.rArm.rotation.set(clampedPitchR, 0, -baseRestZ + rig.rightArm.rotation.z * 0.35);
+      const clampedPitchL = THREE.MathUtils.clamp(rig.leftArm.rotation.x, -0.42, 0.42);
+      const clampedPitchR = THREE.MathUtils.clamp(rig.rightArm.rotation.x, -0.42, 0.42);
+      b.lArm.rotation.set(clampedPitchL, 0, baseRestZ - rig.leftArm.rotation.z * 0.25);
+      b.rArm.rotation.set(clampedPitchR, 0, -baseRestZ + rig.rightArm.rotation.z * 0.25);
       // Tekukan siku natural ke arah depan (+Z dunia) saat memegang senter/berlari
-      const leftElbowBend = Math.min(1.15, Math.max(0.08, Math.abs(rig.leftElbow.rotation.x) * 0.82));
-      const rightElbowBend = Math.min(1.15, Math.max(0.08, Math.abs(rig.rightElbow.rotation.x) * 0.82));
+      const leftElbowBend = Math.min(0.68, Math.max(0.06, Math.abs(rig.leftElbow.rotation.x) * 0.65));
+      const rightElbowBend = Math.min(0.68, Math.max(0.06, Math.abs(rig.rightElbow.rotation.x) * 0.65));
       b.lFore.rotation.y = leftElbowBend;
       b.rFore.rotation.y = -rightElbowBend;
     } else {

@@ -437,6 +437,7 @@ export class HorrorWorld {
   private hasHoverPointer = false;
   private lastPointerX = 0;
   private lastPointerY = 0;
+  private lastMouseMoveAt = 0;
   private pointerLockIgnoreMoves = 0;
   private moveVelX = 0;
   private moveVelZ = 0;
@@ -2782,6 +2783,21 @@ export class HorrorWorld {
     this.keys.add(e.code);
     if (isRepeat) return;
 
+    const moveKey =
+      e.code === 'KeyW' ||
+      e.code === 'KeyA' ||
+      e.code === 'KeyS' ||
+      e.code === 'KeyD' ||
+      e.code === 'ArrowUp' ||
+      e.code === 'ArrowDown' ||
+      e.code === 'ArrowLeft' ||
+      e.code === 'ArrowRight' ||
+      e.code === 'ShiftLeft' ||
+      e.code === 'Space';
+    if (moveKey && document.pointerLockElement !== this.renderer.domElement) {
+      this.requestPointerLock();
+    }
+
     if (e.code === 'KeyF') this.toggleFlashlight();
     else if (e.code === 'KeyQ') this.toggleUVMode();
     else if (e.code === 'KeyV') this.togglePerspective();
@@ -2842,13 +2858,13 @@ export class HorrorWorld {
     this.isDraggingLook = true;
     this.lastPointerX = e.clientX;
     this.lastPointerY = e.clientY;
-    const isCoarse = window.matchMedia?.('(pointer: coarse)').matches ?? false;
-    if (e.button === 0 && !isCoarse && document.pointerLockElement !== this.renderer.domElement) {
+    if ((e.button === 0 || e.button === 2) && document.pointerLockElement !== this.renderer.domElement) {
       this.requestPointerLock();
     }
   };
 
   private onMouseMove = (e: MouseEvent): void => {
+    this.lastMouseMoveAt = performance.now();
     if (this.phase !== 'playing') {
       this.hasHoverPointer = false;
       return;
