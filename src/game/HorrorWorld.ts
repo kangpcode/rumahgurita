@@ -3590,8 +3590,15 @@ export class HorrorWorld {
     if (!this.inputSuspended) {
       if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) forward += 1;
       if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) forward -= 1;
-      if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) right += 1;
-      if (this.keys.has('KeyA') || this.keys.has('ArrowLeft')) right -= 1;
+      if (this.keys.has('KeyD')) right += 1;
+      if (this.keys.has('KeyA')) right -= 1;
+      // Kontrol Keyboard rotasi sudut pandang: ArrowLeft / ArrowRight memutar yaw mulus
+      if (this.keys.has('ArrowLeft')) {
+        this.yaw += 2.4 * dt;
+      }
+      if (this.keys.has('ArrowRight')) {
+        this.yaw -= 2.4 * dt;
+      }
     }
     forward = Math.max(-1, Math.min(1, forward));
     right = Math.max(-1, Math.min(1, right));
@@ -3601,6 +3608,26 @@ export class HorrorWorld {
       !this.isHiding &&
       !this.isSpectator &&
       (Math.abs(forward) > 0.05 || Math.abs(right) > 0.05);
+
+    // Saat berjalan/berlari dan berbelok kiri/kanan (A/D atau joystick) tanpa mouse override aktif:
+    // Putar sudut pandang (yaw) secara simultan sehingga pandangan tidak pernah beku atau terkunci
+    const mouseInactive = performance.now() - this.lastMouseMoveAt > 220;
+    if (wantsMove && Math.abs(right) > 0.05 && mouseInactive && !this.keys.has('ArrowLeft') && !this.keys.has('ArrowRight')) {
+      const steerSpeed = (this.virtualSprint || this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') ? 2.4 : 1.85) * (forward < -0.1 ? -1 : 1);
+      this.yaw += -right * steerSpeed * dt;
+    }
+
+    // Edge panning fallback: jika pointer lock belum aktif dan kursor berada di tepi layar saat gameplay:
+    if (document.pointerLockElement !== this.renderer.domElement && this.hasHoverPointer && !this.inputSuspended) {
+      const margin = 55;
+      if (this.lastPointerX <= margin) {
+        const factor = (margin - this.lastPointerX) / margin;
+        this.yaw += 2.6 * factor * dt;
+      } else if (this.lastPointerX >= window.innerWidth - margin) {
+        const factor = (this.lastPointerX - (window.innerWidth - margin)) / margin;
+        this.yaw -= 2.6 * factor * dt;
+      }
+    }
     const wantsSprint =
       wantsMove &&
       !this.downed &&
