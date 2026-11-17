@@ -3545,11 +3545,17 @@ export class HorrorWorld {
       c.yaw = this.dampAngle(c.yaw, targetYaw, 10, dt);
       c.rig.group.position.set(c.pos.x, c.pos.y, c.pos.z);
       c.rig.group.rotation.y = c.yaw;
-      // Jangan pernah biarkan rekan AI menembus/menghalangi lensa kamera Third-Person (cek jarak ke dada rekan > 1.85m)
+      // Jangan pernah biarkan rekan AI menembus/menghalangi lensa kamera Third-Person:
+      // Sembunyikan rekan jika berada di bidang pandang depan kamera dekat (< 3.2m dan dotCam > 0.22)
+      // atau jarak mutlak terlalu dekat (< 2.2m saat menengadah ke langit)
       if (this.perspective === 'third-person') {
-        const compChest = _v1.set(c.pos.x, c.pos.y + 1.25, c.pos.z);
-        const distToCam = this.camera.position.distanceTo(compChest);
-        c.rig.group.visible = distToCam > 1.85;
+        const compPos = _v1.set(c.pos.x, c.pos.y + 1.25, c.pos.z);
+        const distToCam = this.camera.position.distanceTo(compPos);
+        _v2.subVectors(compPos, this.camera.position).normalize();
+        this.camera.getWorldDirection(_v3);
+        const dotCam = _v2.dot(_v3);
+        const isBlockingView = distToCam < 3.2 && dotCam > 0.22;
+        c.rig.group.visible = !isBlockingView && distToCam > 2.2;
       } else {
         c.rig.group.visible = true;
       }
