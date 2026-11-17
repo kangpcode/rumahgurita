@@ -162,6 +162,7 @@ export interface GhostSyncItem {
   state: 'patrol' | 'investigate' | 'chase' | 'stalk' | 'stunned';
   stunTimer: number;
   alertTimer: number;
+  active?: boolean;
 }
 
 export interface RtcSignalPayload {

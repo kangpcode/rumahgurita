@@ -1332,7 +1332,7 @@ export function createInitialGhosts(): GhostData[] {
       alertTimer: 0,
       stunTimer: 0,
       speed: 2.15,
-      active: true,
+      active: false, // Inaktif di awal; bangkit & melompat muncul menghadang saat Kunci 1 (Kunci Dapur) diambil!
     },
     {
       id: 'ghost_boneka_uci',
