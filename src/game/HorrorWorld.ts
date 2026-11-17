@@ -4088,7 +4088,7 @@ export class HorrorWorld {
         14,
         dt
       );
-      const pitchArmOffset = THREE.MathUtils.clamp(-this.pitch * 0.22, -0.28, 0.28);
+      const pitchArmOffset = THREE.MathUtils.clamp(-this.pitch * 0.06, -0.08, 0.08);
       const leftTargetArmX =
         this.uvMode || this.kujangClaimed || this.heldPropTimer > 0
           ? -0.45 + pitchArmOffset + swing * 0.16
