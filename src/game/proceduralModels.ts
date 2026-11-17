@@ -376,7 +376,13 @@ export function extractGlbBoneSet(root: THREE.Object3D): GlbBoneSet | undefined 
  */
 export function syncHumanoidGlbBones(
   rig: HumanoidRig,
-  opts: { isSeated?: boolean; isCrouching?: boolean; isDowned?: boolean } = {}
+  opts: {
+    isSeated?: boolean;
+    isCrouching?: boolean;
+    isDowned?: boolean;
+    hipYaw?: number;
+    hipRoll?: number;
+  } = {}
 ): void {
   const b = rig.glbBones;
   if (!b) return;
@@ -384,6 +390,7 @@ export function syncHumanoidGlbBones(
   b.hips.position.y = b.baseHipY;
 
   if (opts.isSeated) {
+    b.hips.rotation.set(0, 0, 0);
     b.spine.rotation.set(0.08, 0, rig.bodyRoot.rotation.z);
     b.lThigh.rotation.x = -1.36;
     b.rThigh.rotation.x = -1.36;
@@ -394,10 +401,19 @@ export function syncHumanoidGlbBones(
     b.lFore.rotation.y = 0.45;
     b.rFore.rotation.y = -0.45;
   } else {
+    const hYaw = opts.hipYaw ?? 0;
+    const hRoll = opts.hipRoll ?? 0;
+    b.hips.rotation.set(
+      (opts.isDowned ? 0.28 : opts.isCrouching ? 0.2 : 0) + rig.bodyRoot.rotation.x * 0.28,
+      hYaw,
+      hRoll + rig.bodyRoot.rotation.z * 0.45
+    );
+
+    // Spine counter-twists smoothly against hips
     b.spine.rotation.set(
-      (opts.isDowned ? 0.34 : opts.isCrouching ? 0.24 : 0) + rig.bodyRoot.rotation.x * 0.45,
-      rig.bodyRoot.rotation.y * 0.5,
-      rig.bodyRoot.rotation.z
+      (opts.isDowned ? 0.16 : opts.isCrouching ? 0.12 : 0) + rig.bodyRoot.rotation.x * 0.28,
+      -hYaw * 0.65 + rig.bodyRoot.rotation.y * 0.35,
+      -hRoll * 0.5 + rig.bodyRoot.rotation.z * 0.55
     );
     b.lThigh.rotation.x = rig.leftLeg.rotation.x;
     b.rThigh.rotation.x = rig.rightLeg.rotation.x;
@@ -406,13 +422,13 @@ export function syncHumanoidGlbBones(
 
     if (b.hips.userData.isTPose !== false) {
       // Pembatasan ayunan lengan anatomis: mencegah tangan melayang ke langit saat menengadah
-      const clampedPitchL = THREE.MathUtils.clamp(rig.leftArm.rotation.x, -0.42, 0.42);
-      const clampedPitchR = THREE.MathUtils.clamp(rig.rightArm.rotation.x, -0.42, 0.42);
+      const clampedPitchL = THREE.MathUtils.clamp(rig.leftArm.rotation.x, -0.45, 0.45);
+      const clampedPitchR = THREE.MathUtils.clamp(rig.rightArm.rotation.x, -0.45, 0.45);
       b.lArm.rotation.set(clampedPitchL, 0, baseRestZ - rig.leftArm.rotation.z * 0.25);
       b.rArm.rotation.set(clampedPitchR, 0, -baseRestZ + rig.rightArm.rotation.z * 0.25);
       // Tekukan siku natural ke arah depan (+Z dunia) saat memegang senter/berlari
-      const leftElbowBend = Math.min(0.68, Math.max(0.06, Math.abs(rig.leftElbow.rotation.x) * 0.65));
-      const rightElbowBend = Math.min(0.68, Math.max(0.06, Math.abs(rig.rightElbow.rotation.x) * 0.65));
+      const leftElbowBend = Math.min(0.72, Math.max(0.06, Math.abs(rig.leftElbow.rotation.x) * 0.7));
+      const rightElbowBend = Math.min(0.72, Math.max(0.06, Math.abs(rig.rightElbow.rotation.x) * 0.7));
       b.lFore.rotation.y = leftElbowBend;
       b.rFore.rotation.y = -rightElbowBend;
     } else {
@@ -437,32 +453,41 @@ export function syncGhostGlbBones(
   const b = rig.glbBones;
   if (!b) return;
   const isTPose = b.hips.userData.isTPose !== false;
-  const baseRestZ = (b.hips.userData.lArmRestZ as number | undefined) ?? 1.12;
+  const baseRestZ = (b.hips.userData.lArmRestZ as number | undefined) ?? 1.35;
 
   if (isFrozen) {
     if (isTPose) {
-      b.lArm.rotation.z = baseRestZ;
-      b.rArm.rotation.z = -baseRestZ;
+      b.lArm.rotation.set(-0.16, 0, baseRestZ);
+      b.rArm.rotation.set(-0.24, 0, -baseRestZ);
+      b.lFore.rotation.y = 0.35;
+      b.rFore.rotation.y = -0.35;
+      b.spine.rotation.set(0.08, 0, 0.04);
+      b.head.rotation.set(0.06, -0.18, 0.24); // Kepala miring seram khas boneka berhantu (creepy head tilt)
+      b.lThigh.rotation.x = -0.06;
+      b.rThigh.rotation.x = 0.08;
+      b.lShin.rotation.x = 0.12;
+      b.rShin.rotation.x = 0.18;
     }
     return;
   }
 
-  const stride = Math.sin(timeSec * (isChasing ? 10.5 : 4.2)) * (isChasing ? 0.48 : 0.14);
+  const stride = Math.sin(timeSec * (isChasing ? 9.6 : 3.8)) * (isChasing ? 0.44 : 0.16);
   b.lThigh.rotation.x = stride;
   b.rThigh.rotation.x = -stride;
-  b.lShin.rotation.x = Math.max(0.08, -stride * 0.75 + 0.12);
-  b.rShin.rotation.x = Math.max(0.08, stride * 0.75 + 0.12);
+  b.lShin.rotation.x = Math.max(0.08, Math.sin(timeSec * (isChasing ? 9.6 : 3.8)) * 0.65 + 0.15);
+  b.rShin.rotation.x = Math.max(0.08, -Math.sin(timeSec * (isChasing ? 9.6 : 3.8)) * 0.65 + 0.15);
 
   if (isTPose) {
-    b.lArm.rotation.set(-0.42 - stride * 0.35, 0, baseRestZ);
-    b.rArm.rotation.set(-0.52 + stride * 0.35, 0, -baseRestZ);
-    b.lFore.rotation.y = 0.55;
-    b.rFore.rotation.y = -0.55;
+    b.lArm.rotation.set(-0.35 - stride * 0.35, 0, baseRestZ);
+    b.rArm.rotation.set(-0.45 + stride * 0.35, 0, -baseRestZ);
+    b.lFore.rotation.y = 0.48;
+    b.rFore.rotation.y = -0.48;
     b.spine.rotation.set(isChasing ? 0.18 : 0.06, 0, Math.sin(timeSec * 3.1) * 0.08);
+    const twitch = isChasing ? Math.sin(timeSec * 16) * 0.08 : 0;
     b.head.rotation.set(
-      Math.sin(timeSec * 2.7) * 0.1,
+      Math.sin(timeSec * 2.7) * 0.1 + twitch,
       Math.sin(timeSec * 1.9) * 0.16,
-      Math.sin(timeSec * 6.5) * 0.24
+      Math.sin(timeSec * 6.5) * 0.2 + 0.12
     );
   } else {
     b.lArm.rotation.set(-stride * 0.75 - 0.28, 0, -0.08);
