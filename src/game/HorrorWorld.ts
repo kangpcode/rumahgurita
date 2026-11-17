@@ -3246,6 +3246,8 @@ export class HorrorWorld {
         rig.rightElbow.rotation.x = isSpeaking ? -0.78 + Math.cos(timeSec * 5.0) * 0.18 : -0.45;
         rig.leftArm.rotation.x = -0.14 + Math.sin(timeSec * 1.2) * 0.06;
         rig.leftElbow.rotation.x = -0.32;
+        rig.leftKnee.rotation.x = 0.06 + Math.sin(timeSec * 1.1) * 0.025;
+        rig.rightKnee.rotation.x = 0.06 - Math.sin(timeSec * 1.1) * 0.025;
       } else if (id === 'nasgor') {
         rig.bodyRoot.position.y = breath;
         rig.rightArm.rotation.x = -0.68 + Math.sin(timeSec * 6.4) * 0.24;
@@ -3255,6 +3257,8 @@ export class HorrorWorld {
         rig.leftElbow.rotation.x = -0.42;
         rig.head.rotation.y = this.dampAngle(rig.head.rotation.y, dist < 4.5 ? headYawOffset : Math.sin(timeSec * 1.5) * 0.18, 5, dt);
         rig.head.rotation.x = isSpeaking ? Math.sin(timeSec * 4.8) * 0.06 : 0.14 + Math.sin(timeSec * 3.2) * 0.06;
+        rig.leftKnee.rotation.x = 0.08 + Math.sin(timeSec * 2.1) * 0.03;
+        rig.rightKnee.rotation.x = 0.08 - Math.sin(timeSec * 2.1) * 0.03;
       } else if (id === 'pecel') {
         rig.bodyRoot.position.y = breath;
         rig.rightArm.rotation.x = isSpeaking ? -0.62 + Math.sin(timeSec * 4.6) * 0.18 : -0.52 + Math.sin(timeSec * 4.8) * 0.26;
@@ -3262,6 +3266,8 @@ export class HorrorWorld {
         rig.leftArm.rotation.x = -0.2 + Math.cos(timeSec * 2.4) * 0.12;
         rig.leftElbow.rotation.x = -0.38;
         rig.head.rotation.y = this.dampAngle(rig.head.rotation.y, dist < 4.5 ? headYawOffset : Math.sin(timeSec * 1.3) * 0.24, 5, dt);
+        rig.leftKnee.rotation.x = 0.08 + Math.sin(timeSec * 1.8) * 0.03;
+        rig.rightKnee.rotation.x = 0.08 - Math.sin(timeSec * 1.8) * 0.03;
       } else if (id === 'warung_ibu') {
         rig.bodyRoot.position.y = breath;
         rig.rightArm.rotation.x = isSpeaking ? -0.64 + Math.sin(timeSec * 5.0) * 0.2 : -0.42 + Math.sin(timeSec * 2.2) * 0.18;
@@ -3270,6 +3276,8 @@ export class HorrorWorld {
         rig.leftElbow.rotation.x = -0.52;
         rig.head.rotation.y = this.dampAngle(rig.head.rotation.y, dist < 4.5 ? headYawOffset : Math.sin(timeSec * 1.1) * 0.3, 5, dt);
         rig.head.rotation.x = isSpeaking ? Math.sin(timeSec * 5.5) * 0.07 : 0;
+        rig.leftKnee.rotation.x = 0.07;
+        rig.rightKnee.rotation.x = 0.07;
       } else if (id === 'warung_pemuda_1') {
         rig.bodyRoot.position.y = -0.34 + breath * 0.6;
         rig.bodyRoot.rotation.z = Math.sin(timeSec * 1.1) * 0.025;
@@ -3298,6 +3306,8 @@ export class HorrorWorld {
         rig.rightElbow.rotation.x = -0.44 - Math.sin(timeSec * 2.4) * 0.12;
         rig.head.rotation.y = this.dampAngle(rig.head.rotation.y, dist < 4.5 ? headYawOffset : -0.18 + Math.sin(timeSec * 1.45) * 0.28, 5, dt);
         rig.leftLeg.rotation.x = Math.sin(timeSec * 4.0) * 0.08;
+        rig.leftKnee.rotation.x = 0.08 + Math.sin(timeSec * 1.4) * 0.03;
+        rig.rightKnee.rotation.x = 0.08 - Math.sin(timeSec * 1.4) * 0.03;
       }
     }
   }
@@ -3471,13 +3481,22 @@ export class HorrorWorld {
         10,
         dt
       );
-      const swing = moving && !entry.downed ? Math.sin(timeSec * 8.5) * 0.54 : 0;
+      const mpPhase = timeSec * 8.5;
+      const swing = moving && !entry.downed ? Math.sin(mpPhase) * 0.54 : 0;
       const crouchHipOff = entry.isCrouching && !entry.downed ? -0.68 : 0;
       const crouchKneeOff = entry.isCrouching && !entry.downed ? 1.16 : 0;
+      const mpSwingKneeL = Math.max(0, Math.sin(mpPhase)) * 0.74;
+      const mpStanceKneeL = Math.max(0, -Math.sin(mpPhase)) * 0.20;
+      const mpKneeL = moving && !entry.downed ? 0.08 + mpSwingKneeL + mpStanceKneeL : 0.08;
+
+      const mpSwingKneeR = Math.max(0, -Math.sin(mpPhase)) * 0.74;
+      const mpStanceKneeR = Math.max(0, Math.sin(mpPhase)) * 0.20;
+      const mpKneeR = moving && !entry.downed ? 0.08 + mpSwingKneeR + mpStanceKneeR : 0.08;
+
       entry.rig.leftLeg.rotation.x = THREE.MathUtils.damp(entry.rig.leftLeg.rotation.x, crouchHipOff + swing, 10, dt);
       entry.rig.rightLeg.rotation.x = THREE.MathUtils.damp(entry.rig.rightLeg.rotation.x, crouchHipOff - swing, 10, dt);
-      entry.rig.leftKnee.rotation.x = THREE.MathUtils.damp(entry.rig.leftKnee.rotation.x, crouchKneeOff + (moving ? Math.max(0, -swing) * 0.75 + 0.14 : 0.08), 10, dt);
-      entry.rig.rightKnee.rotation.x = THREE.MathUtils.damp(entry.rig.rightKnee.rotation.x, crouchKneeOff + (moving ? Math.max(0, swing) * 0.75 + 0.14 : 0.08), 10, dt);
+      entry.rig.leftKnee.rotation.x = THREE.MathUtils.damp(entry.rig.leftKnee.rotation.x, crouchKneeOff + mpKneeL, 10, dt);
+      entry.rig.rightKnee.rotation.x = THREE.MathUtils.damp(entry.rig.rightKnee.rotation.x, crouchKneeOff + mpKneeR, 10, dt);
       entry.rig.leftArm.rotation.x = THREE.MathUtils.damp(entry.rig.leftArm.rotation.x, -swing * 0.8, 10, dt);
       entry.rig.rightArm.rotation.x = THREE.MathUtils.damp(
         entry.rig.rightArm.rotation.x,
@@ -3485,14 +3504,26 @@ export class HorrorWorld {
         10,
         dt
       );
-      entry.rig.leftElbow.rotation.x = THREE.MathUtils.damp(entry.rig.leftElbow.rotation.x, -0.35 - Math.abs(swing) * 0.25, 10, dt);
-      entry.rig.rightElbow.rotation.x = THREE.MathUtils.damp(
-        entry.rig.rightElbow.rotation.x,
-        entry.flashlightOn && !entry.downed ? -0.62 : -0.35 - Math.abs(swing) * 0.25,
+      entry.rig.leftElbow.rotation.x = THREE.MathUtils.damp(
+        entry.rig.leftElbow.rotation.x,
+        moving && !entry.downed ? -0.24 - Math.max(0, -swing) * 0.45 : -0.2,
         10,
         dt
       );
-      syncHumanoidGlbBones(entry.rig, { isCrouching: entry.isCrouching, isDowned: entry.downed });
+      entry.rig.rightElbow.rotation.x = THREE.MathUtils.damp(
+        entry.rig.rightElbow.rotation.x,
+        entry.flashlightOn && !entry.downed ? -0.62 : moving && !entry.downed ? -0.24 - Math.max(0, swing) * 0.45 : -0.2,
+        10,
+        dt
+      );
+      const mpHipYaw = moving && !entry.downed ? Math.sin(mpPhase) * 0.06 : 0;
+      const mpHipRoll = moving && !entry.downed ? Math.cos(mpPhase) * 0.03 : Math.sin(timeSec * 0.35) * 0.015;
+      syncHumanoidGlbBones(entry.rig, {
+        isCrouching: entry.isCrouching,
+        isDowned: entry.downed,
+        hipYaw: mpHipYaw,
+        hipRoll: mpHipRoll,
+      });
       if (entry.rig.rightFlashlightLensMat) {
         entry.rig.rightFlashlightLensMat.color.setHex(entry.flashlightOn && !entry.downed ? 0xfff3d4 : 0x26282a);
       }
@@ -3562,17 +3593,33 @@ export class HorrorWorld {
       const breath = Math.sin(timeSec * 2.1 + c.phaseOffset) * 0.015;
       c.rig.bodyRoot.position.y = (moved ? Math.abs(Math.sin(timeSec * 7.8 + c.phaseOffset)) * 0.04 : 0) + breath;
       c.rig.bodyRoot.rotation.x = THREE.MathUtils.damp(c.rig.bodyRoot.rotation.x, moved ? 0.08 : 0, 8, dt);
-      const swing = moved ? Math.sin(timeSec * 7.8 + c.phaseOffset) * 0.54 : 0;
+      const cPhase = timeSec * 7.8 + c.phaseOffset;
+      const swing = moved ? Math.sin(cPhase) * 0.54 : 0;
+      const cSwingKneeL = Math.max(0, Math.sin(cPhase)) * 0.74;
+      const cStanceKneeL = Math.max(0, -Math.sin(cPhase)) * 0.20;
+      const cKneeL = moved ? 0.08 + cSwingKneeL + cStanceKneeL : 0.08;
+
+      const cSwingKneeR = Math.max(0, -Math.sin(cPhase)) * 0.74;
+      const cStanceKneeR = Math.max(0, Math.sin(cPhase)) * 0.20;
+      const cKneeR = moved ? 0.08 + cSwingKneeR + cStanceKneeR : 0.08;
+
       c.rig.leftLeg.rotation.x = THREE.MathUtils.damp(c.rig.leftLeg.rotation.x, swing, 10, dt);
       c.rig.rightLeg.rotation.x = THREE.MathUtils.damp(c.rig.rightLeg.rotation.x, -swing, 10, dt);
-      c.rig.leftKnee.rotation.x = THREE.MathUtils.damp(c.rig.leftKnee.rotation.x, moved ? Math.max(0, -swing) * 0.78 + 0.14 : 0.08, 10, dt);
-      c.rig.rightKnee.rotation.x = THREE.MathUtils.damp(c.rig.rightKnee.rotation.x, moved ? Math.max(0, swing) * 0.78 + 0.14 : 0.08, 10, dt);
+      c.rig.leftKnee.rotation.x = THREE.MathUtils.damp(c.rig.leftKnee.rotation.x, cKneeL, 10, dt);
+      c.rig.rightKnee.rotation.x = THREE.MathUtils.damp(c.rig.rightKnee.rotation.x, cKneeR, 10, dt);
       c.rig.leftArm.rotation.x = THREE.MathUtils.damp(c.rig.leftArm.rotation.x, moved ? -swing * 0.78 : breath * 1.4, 10, dt);
       c.rig.rightArm.rotation.x = THREE.MathUtils.damp(c.rig.rightArm.rotation.x, moved ? -0.38 + swing * 0.2 : -0.3 - breath * 1.2, 10, dt);
-      c.rig.leftElbow.rotation.x = THREE.MathUtils.damp(c.rig.leftElbow.rotation.x, -0.35 - (moved ? Math.abs(swing) * 0.3 : 0), 10, dt);
+      c.rig.leftElbow.rotation.x = THREE.MathUtils.damp(
+        c.rig.leftElbow.rotation.x,
+        moved ? -0.24 - Math.max(0, -swing) * 0.45 : -0.2,
+        10,
+        dt
+      );
       c.rig.rightElbow.rotation.x = THREE.MathUtils.damp(c.rig.rightElbow.rotation.x, -0.64, 10, dt);
       c.rig.head.rotation.y = Math.sin(timeSec * 0.8 + c.phaseOffset) * 0.16;
-      syncHumanoidGlbBones(c.rig, {});
+      const cHipYaw = moved ? Math.sin(cPhase) * 0.06 : 0;
+      const cHipRoll = moved ? Math.cos(cPhase) * 0.03 : Math.sin(timeSec * 0.35) * 0.015;
+      syncHumanoidGlbBones(c.rig, { hipYaw: cHipYaw, hipRoll: cHipRoll });
       const compTalking = this.activeSpeech?.target === 'player' && idx === 0;
       applyMouthLipSync(
         c.rig.mouthPivot,
@@ -4069,54 +4116,70 @@ export class HorrorWorld {
         this.playerRig.neckJoint.rotation.y = this.playerRig.head.rotation.y * 0.35;
       }
 
-      // Animasi ayunan tangan, tekukan lutut, & pose memegang senter / Kamera UV / Kujang di Third-Person
-      const swingAmp = actualMoved ? (isSprinting ? 0.88 : isCrouching ? 0.36 : 0.6) : 0;
-      const swing = Math.sin(this.headBobPhase) * swingAmp;
+      // Animasi biomekanik ayunan tangan, tekukan lutut 2-fase, panggul & spine di Third-Person
+      const phase = this.headBobPhase;
+      const swingAmp = actualMoved ? (isSprinting ? 0.85 : isCrouching ? 0.38 : 0.58) : 0;
+      const swing = Math.sin(phase) * swingAmp;
       const crouchHipOff = isCrouching && !this.downed ? -0.68 : 0;
       const crouchKneeOff = isCrouching && !this.downed ? 1.16 : 0;
+
+      // Fleksi lutut dua fase anatomis: tekukan fase ayun (swing clearance) + peredam hentakan tumit (heel strike cushion)
+      const lSwingKnee = Math.max(0, Math.sin(phase)) * (isSprinting ? 0.95 : 0.74);
+      const lStanceKnee = Math.max(0, -Math.sin(phase)) * 0.22;
+      const lKneeTarget = actualMoved ? 0.08 + lSwingKnee + lStanceKnee : 0.08;
+
+      const rSwingKnee = Math.max(0, -Math.sin(phase)) * (isSprinting ? 0.95 : 0.74);
+      const rStanceKnee = Math.max(0, Math.sin(phase)) * 0.22;
+      const rKneeTarget = actualMoved ? 0.08 + rSwingKnee + rStanceKnee : 0.08;
+
       this.playerRig.leftLeg.rotation.x = THREE.MathUtils.damp(this.playerRig.leftLeg.rotation.x, crouchHipOff + swing, 14, dt);
       this.playerRig.rightLeg.rotation.x = THREE.MathUtils.damp(this.playerRig.rightLeg.rotation.x, crouchHipOff - swing, 14, dt);
       this.playerRig.leftKnee.rotation.x = THREE.MathUtils.damp(
         this.playerRig.leftKnee.rotation.x,
-        crouchKneeOff + (actualMoved ? Math.max(0, -swing) * 0.82 + 0.14 : 0.08),
+        crouchKneeOff + lKneeTarget,
         14,
         dt
       );
       this.playerRig.rightKnee.rotation.x = THREE.MathUtils.damp(
         this.playerRig.rightKnee.rotation.x,
-        crouchKneeOff + (actualMoved ? Math.max(0, swing) * 0.82 + 0.14 : 0.08),
+        crouchKneeOff + rKneeTarget,
         14,
         dt
       );
+
+      // Rotasi panggul dinamis (Pelvis Yaw & Roll) untuk membuang kesan mannequin/kaku kaku
+      const hipYaw = actualMoved ? Math.sin(phase) * (isSprinting ? 0.085 : 0.06) : 0;
+      const hipRoll = actualMoved ? Math.cos(phase) * (isSprinting ? 0.045 : 0.03) : Math.sin(timeSec * 0.35) * 0.015;
+
       const pitchArmOffset = THREE.MathUtils.clamp(-this.pitch * 0.06, -0.08, 0.08);
       const leftTargetArmX =
         this.uvMode || this.kujangClaimed || this.heldPropTimer > 0
-          ? -0.45 + pitchArmOffset + swing * 0.16
+          ? -0.42 + pitchArmOffset + swing * 0.14
           : actualMoved
-            ? -swing * 0.78
-            : idleBreath * 1.4;
+            ? -swing * 0.72
+            : idleBreath * 1.2;
       const rightTargetArmX = this.flashlightOn
-        ? -0.46 + pitchArmOffset + swing * 0.16
+        ? -0.38 + pitchArmOffset + swing * 0.12
         : actualMoved
-          ? swing * 0.78
-          : -idleBreath * 1.4;
+          ? swing * 0.72
+          : -idleBreath * 1.2;
       const leftElbowTargetX =
         this.uvMode || this.kujangClaimed || this.heldPropTimer > 0
-          ? -0.78
+          ? -0.68
           : actualMoved
-            ? -0.35 - Math.abs(swing) * 0.25
-            : -0.28;
+            ? -0.24 - Math.max(0, -swing) * 0.48
+            : -0.2;
       const rightElbowTargetX = this.flashlightOn
-        ? -0.68
+        ? -0.52 - swing * 0.08
         : actualMoved
-          ? -0.35 - Math.abs(swing) * 0.25
-          : -0.28;
+          ? -0.24 - Math.max(0, swing) * 0.48
+          : -0.2;
       this.playerRig.leftArm.rotation.x = THREE.MathUtils.damp(this.playerRig.leftArm.rotation.x, leftTargetArmX, 14, dt);
       this.playerRig.rightArm.rotation.x = THREE.MathUtils.damp(this.playerRig.rightArm.rotation.x, rightTargetArmX, 14, dt);
       this.playerRig.leftElbow.rotation.x = THREE.MathUtils.damp(this.playerRig.leftElbow.rotation.x, leftElbowTargetX, 14, dt);
       this.playerRig.rightElbow.rotation.x = THREE.MathUtils.damp(this.playerRig.rightElbow.rotation.x, rightElbowTargetX, 14, dt);
       this.playerRig.bodyRoot.scale.y = this.downed && !this.playerRig.glbBones ? 0.56 : 1.0;
-      syncHumanoidGlbBones(this.playerRig, { isCrouching, isDowned: this.downed });
+      syncHumanoidGlbBones(this.playerRig, { isCrouching, isDowned: this.downed, hipYaw, hipRoll });
 
       const playerTalking = this.activeSpeech?.target === 'player';
       applyMouthLipSync(
@@ -4830,9 +4893,13 @@ export class HorrorWorld {
         const walkSwing = Math.sin(timeSec * 7.2) * 0.55;
         this.playerRig.leftLeg.rotation.x = walkSwing;
         this.playerRig.rightLeg.rotation.x = -walkSwing;
+        this.playerRig.leftKnee.rotation.x = Math.max(0.08, Math.sin(timeSec * 7.2) * 0.72 + 0.16);
+        this.playerRig.rightKnee.rotation.x = Math.max(0.08, -Math.sin(timeSec * 7.2) * 0.72 + 0.16);
         this.playerRig.leftArm.rotation.x = -walkSwing * 0.7;
         this.playerRig.rightArm.rotation.x = -0.45 + walkSwing * 0.2;
-        syncHumanoidGlbBones(this.playerRig, {});
+        const eHipYaw = Math.sin(timeSec * 7.2) * 0.06;
+        const eHipRoll = Math.cos(timeSec * 7.2) * 0.03;
+        syncHumanoidGlbBones(this.playerRig, { hipYaw: eHipYaw, hipRoll: eHipRoll });
 
         this.camera.position.set(
           -5.0 + Math.sin(u * 1.4) * 1.0,
