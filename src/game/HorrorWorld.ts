@@ -1396,6 +1396,7 @@ export class HorrorWorld {
     for (const g of this.ghosts) {
       const rig = createGhostModel(g.kind, this.mats.contactShadowTex);
       rig.group.position.set(g.position.x, g.position.y, g.position.z);
+      rig.group.visible = g.active;
       this.scene.add(rig.group);
       this.ghostRigs.set(g.id, rig);
     }
